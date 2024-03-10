@@ -1,14 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Link, Routes } from 'react-router-dom';
-
-// それぞれのページのコンポーネント
-function Home() {
-  return <h2>Home</h2>;
-}
-
-function About() {
-  return <h2>About</h2>;
-}
+import HistogramDots from './components/HistogramDots';
+import HistogramConfig from './components/HistogramConfig';
 
 function App() {
   return (
@@ -20,15 +13,15 @@ function App() {
               <Link to="/">Home</Link>
             </li>
             <li>
-              <Link to="/about">About</Link>
+              <Link to="/histogram">histogram</Link>
             </li>
           </ul>
         </nav>
 
         {/* ページ遷移の定義 */}
         <Routes>
-          <Route path="/about" element={<About />} />
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<HistogramConfig />} />
+          <Route path="/histogram" element={<HistogramDots />} />
         </Routes>
       </div>
     </Router>
