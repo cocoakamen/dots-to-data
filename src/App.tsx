@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Route, Link, Routes } from 'react-router-dom';
+import { HashRouter as Router, Route, Link, Routes } from 'react-router-dom';
 import HistogramDots from './components/HistogramDots';
 import HistogramConfig from './components/HistogramConfig';
 
