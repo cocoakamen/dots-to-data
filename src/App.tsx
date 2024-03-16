@@ -9,10 +9,10 @@ function App() {
         <nav>
           <ul>
             <li>
-              <Link to="/">Home</Link>
+              <Link to="/dots-to-data/">Home</Link>
             </li>
             <li>
-              <Link to="/histogram">histogram</Link>
+              <Link to="/dots-to-data/histogram">histogram</Link>
             </li>
           </ul>
         </nav>
