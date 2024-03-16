@@ -19,8 +19,8 @@ function App() {
 
         {/* ページ遷移の定義 */}
         <Routes>
-          <Route path="/" element={<HistogramConfig />} />
-          <Route path="/histogram" element={<HistogramDots />} />
+          <Route path="/dots-to-data/" element={<HistogramConfig />} />
+          <Route path="/dots-to-data/" element={<HistogramDots />} />
         </Routes>
       </div>
     </Router>
