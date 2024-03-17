@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
+import Modal from '@mui/material/Modal';
+import Typography from '@mui/material/Typography';
 
 const HistogramConfig: React.FC = () => {
   
@@ -18,10 +20,23 @@ const HistogramConfig: React.FC = () => {
     lineHeight: 1.3,
   };
 
+  const modalSyle = {
+    position: 'absolute' as 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+  };
+
   // 状態の初期化
   const [histogramConfig, setHistogramConfig] = useState({
     lowerLimit: 0,
     upperLimit: 100,
+    digitCount: 0,
     dataCount: 50,
     binCount: 10,
     type: 'default'
@@ -40,6 +55,12 @@ const HistogramConfig: React.FC = () => {
     console.log(JSON.stringify(histogramConfig));
   };
 
+  const handleDigitCountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    histogramConfig.digitCount = Number(event.target.value);
+    setHistogramConfig(histogramConfig);
+    console.log(JSON.stringify(histogramConfig));
+  };
+
   const handleDataCountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     histogramConfig.dataCount = Number(event.target.value);
     setHistogramConfig(histogramConfig);
@@ -52,26 +73,56 @@ const HistogramConfig: React.FC = () => {
     console.log(JSON.stringify(histogramConfig));
   };
 
+  // データチェックモーダルの開閉
+  const [checkModalOpen, setCheckModalOpen] = useState(false);
+  const handleCheckModalOpen = () => setCheckModalOpen(true);
+  const handleCheckModalClose = () => setCheckModalOpen(false);
+
+  const checkHistogramConfig = () => {
+    if (histogramConfig.lowerLimit >= histogramConfig.upperLimit) {
+      return false;
+    }
+    if (histogramConfig.digitCount < 0 || histogramConfig.digitCount > 1) {
+      return false;
+    }
+    if (histogramConfig.dataCount < 0) {
+      return false;
+    }
+    if (histogramConfig.binCount < 1) {
+      return false;
+    }
+    return true;
+  }
+
   // 形を選択したときのハンドラー
   const navigate = useNavigate();
+
+  const handleTypeClick = () => {
+    if (checkHistogramConfig()) {
+      navigate('/histogram/', { state: { histogramConfig } });
+    } else {
+      handleCheckModalOpen();
+    }
+  }
+
   const handleFujisanTypeClick = () => {
     histogramConfig.type = 'fujisan'; 
-    navigate('/histogram/', { state: { histogramConfig } });
+    handleTypeClick();
   }
 
   const handleFlatTypeClick = () => {
     histogramConfig.type = 'flat'; 
-    navigate('/histogram/', { state: { histogramConfig } });
+    handleTypeClick();
   }
 
   const handleLeftHighTypeClick = () => {
     histogramConfig.type = 'leftHigh'; 
-    navigate('/histogram/', { state: { histogramConfig } });
+    handleTypeClick();
   }
 
   const handleRightHighTypeClick = () => {
     histogramConfig.type = 'rightHigh'; 
-    navigate('/histogram/', { state: { histogramConfig } });
+    handleTypeClick();
   }
 
   return (
@@ -97,9 +148,28 @@ const HistogramConfig: React.FC = () => {
           sx={textFieldStyle} 
           onChange = {handleUpperLimitChange}
         />
+        <TextField
+          label="小数点以下桁数"
+          type='number'
+          inputProps = {{
+            min: 0 ,
+            max: 1,
+          }}
+          helperText="0桁 or 1桁"
+          defaultValue={histogramConfig.digitCount}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          sx={textFieldStyle} 
+          onChange = {handleDigitCountChange} // 適切なハンドラー関数を設定します
+        />
         <TextField 
           label="データ数"
           type='number'
+          inputProps = {{
+            min: 0 
+          }}
+          helperText="0以上の整数"
           defaultValue={histogramConfig.dataCount}
           InputLabelProps={{
             shrink: true,
@@ -150,6 +220,28 @@ const HistogramConfig: React.FC = () => {
             ⚫︎⚫︎⚫︎⚫︎⚫︎⚫︎⚫︎
         </Button>
       </Box>
+
+      <Modal
+        open={checkModalOpen}
+        onClose={handleCheckModalClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={modalSyle}>
+          <Typography id="modal-modal-title" variant="h6" component="h6">
+            Invalid histogram configuration.
+          </Typography>
+          <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+            Please check the configuration again.
+            <ul>
+              <li>Lower limit must be less than upper limit.</li>
+              <li>Digit count must be 0 or 1.</li>
+              <li>Data count must be 0 or more.</li>
+              <li>Bin count must be 1 or more.</li> 
+            </ul>
+          </Typography>
+        </Box>
+      </Modal>
     </Box>
   );
 }
