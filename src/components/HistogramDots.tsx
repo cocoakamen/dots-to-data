@@ -1,4 +1,6 @@
+import Container from '@mui/material/Container';
 import React, { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const HistogramDots: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -7,6 +9,9 @@ const HistogramDots: React.FC = () => {
         { x: 50, y: 50 },{ x: 100, y: 100 },{ x: 150, y: 150 }
     ]);
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+    const location = useLocation();
+    const histogramConfig = location.state.histogramConfig;
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -104,7 +109,14 @@ const HistogramDots: React.FC = () => {
         };
     }, [isDragging]);
 
-    return <canvas ref={canvasRef} width={800} height={600}/>;
+    return (
+      <Container>
+        <div>
+          {JSON.stringify(histogramConfig)}
+        </div>
+        <canvas ref={canvasRef} width={800} height={600}/>;      
+      </Container>
+    )
 };
 
 export default HistogramDots;
