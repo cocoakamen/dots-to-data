@@ -14,7 +14,7 @@ export class HistogramDataGenerator {
     // ここにヒストグラムデータを生成するロジックを書く
     if (this.config.histogramType === "flat") {
       histogramData = this.generateFlatHistogramData();
-      console.log(histogramData);
+      console.log(`generateHistogramData: ${histogramData}`);
     } 
 
     return histogramData;    

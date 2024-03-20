@@ -5,21 +5,36 @@ import Box from '@mui/material/Box';
 import { HistogramDataGenerator } from '../functions/HistogramDataGenerator';
 
 const HistogramDots: React.FC = () => {
-    const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const [isDragging, setIsDragging] = useState(false);
-    const [positions, setPositions] = useState<{ x: number, y: number }[]>([
+  const location = useLocation();
+  const histogramConfig = location.state.histogramConfig;
+  const generator = new HistogramDataGenerator(histogramConfig);
+  const CANVAS_BG_COLOR = '#EEFFFF';
+  const CANVAS_LINE_COLOR = '#000000';
+  
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [positions, setPositions] = useState<{ x: number, y: number }[]>([
         { x: 50, y: 50 },{ x: 100, y: 100 },{ x: 150, y: 150 }
-    ]);
-    const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  ]);
+  const [xPositions, setXpositions] = useState<number[]>([50, 100, 150]);
+  const [yPositions, setYpositions] = useState<number[]>([50, 100, 150]);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dataCountList, setDataCountList] = useState<number[]>(generator.binDataCountList);
 
-    const location = useLocation();
-    const histogramConfig = location.state.histogramConfig;
-    const generator = new HistogramDataGenerator(histogramConfig);
-    const CANVAS_BG_COLOR = '#EEFFFF';
-    const CANVAS_LINE_COLOR = '#000000';
+  useEffect(() => {
+    let newPostion = [];
+    console.log(`dataCountList: ${dataCountList}`);
+    for (let i = 0; i < dataCountList.length; i++) {
+      for (let j = 0; j < dataCountList[i]; j++) {
+        newPostion.push({ x: xPositions[i], y: yPositions[j] });
+      }
+    }
+    setPositions(newPostion);
+  }, [xPositions, yPositions]);
 
-    useEffect(() => {
+  useEffect(() => {
       console.log(JSON.stringify(positions));
+      console.log(JSON.stringify(dataCountList));
       const canvas = canvasRef.current;
       const context = canvas?.getContext('2d');
       if (!context || !canvas) return;
@@ -43,10 +58,11 @@ const HistogramDots: React.FC = () => {
       const drawAxis = () => {
         const w = canvas.width;
         const h = canvas.height;
-        const xStart = Math.min(w * 0.05, 100);
-        const xEnd = Math.min(w * 0.95, 600);
-        const yStart = Math.min(h * 0.05, 100);
-        const yEnd = Math.min(h * 0.95, 350);
+        const xStart = Math.ceil(Math.min(w * 0.05, 100));
+        const xEnd = Math.ceil(Math.min(w * 0.95, 600));
+        const yStart = Math.ceil(Math.min(h * 0.05, 100));
+        const yEnd = Math.ceil(Math.min(h * 0.95, 350));
+        let xCenters = [];
         context.strokeStyle = CANVAS_LINE_COLOR;
         context.beginPath();
         context.moveTo( xStart, yStart);
@@ -55,37 +71,53 @@ const HistogramDots: React.FC = () => {
         context.stroke();
         context.closePath();
 
-        // 目盛りを描画
-        const xStep = (xEnd - xStart) / histogramConfig.binCount;
-        const yStep = (yEnd - yStart) / 10;
-        for (let i = 1; i < histogramConfig.binCount; i++) {
+        // 目盛りを描画 小数点以下切り上げ
+        const xStep = Math.ceil((xEnd - xStart) / histogramConfig.binCount);
+        for (let i = 0; i < histogramConfig.binCount; i++) {
           context.beginPath();
           context.moveTo(xStart + xStep * i, yEnd);
           context.lineTo(xStart + xStep * i, yEnd + 10);
           context.stroke();
           context.closePath();
+          xCenters.push(xStart + xStep * i + xStep / 2);
+        }
+        // 円描画用のx座標を記録
+        setXpositions(xCenters);
+
+        const maxY = Math.max(...dataCountList) +  Math.ceil(Math.max(...dataCountList) / 5);
+        const yStep = (yEnd - yStart) / maxY; 
+        let yCenters = [];
+        console.log(`maxY: ${maxY}, yStep: ${yStep}`)
+        for (let i = 0; i < maxY; i++) {
           context.beginPath();
           context.moveTo(xStart, yEnd - yStep * i);
           context.lineTo(xStart - 10, yEnd - yStep * i);
           context.stroke();
           context.closePath();
+          yCenters.push(yEnd - yStep * i - yStep / 2);
         }
+        // 円描画用のy座標を記録
+        setYpositions(yCenters);
 
         // 目盛りの値を描画
         context.font = '12px Arial';
         context.textAlign = 'center';
         context.textBaseline = 'top';
         context.fillStyle = CANVAS_LINE_COLOR;
+        // X軸の目盛りの値
         for (let i = 1; i < histogramConfig.binCount; i++) {
           context.fillText(
             (histogramConfig.lowerLimit + (histogramConfig.upperLimit - histogramConfig.lowerLimit) / histogramConfig.binCount * i).toFixed(histogramConfig.decimalPlaces),
             xStart + xStep * i,
             yEnd + 10
           );
+        }
+        // Y軸の目盛りの値
+        for (let i = 1; i < maxY; i++) {
           context.fillText(
-            (histogramConfig.dataCount / 10 * i).toFixed(0),
-            xStart - 10,
-            yEnd - yStep * i
+            i.toString(),
+            xStart - 15,
+            yEnd - yStep * i - 5
           );
         }
       }
@@ -107,7 +139,7 @@ const HistogramDots: React.FC = () => {
         context.stroke();
         context.closePath();
       };
-      
+
       // すべての円を描画する関数
       const drawAllCircles = () => {
           // すべての円を描画
@@ -131,6 +163,7 @@ const HistogramDots: React.FC = () => {
       // 初期表示の円を描画
       initCanvas();
       drawAllCircles();
+      console.log(`xPositions: ${xPositions}`);
 
       const handleMouseDown = (event: MouseEvent　| TouchEvent) => {
           const rect = canvas.getBoundingClientRect();
@@ -191,7 +224,7 @@ const HistogramDots: React.FC = () => {
           window.removeEventListener('resize', resizeCanvas);
       };
 
-    }, [isDragging, positions]);
+    }, [isDragging]);
 
     return (
         <Container>
