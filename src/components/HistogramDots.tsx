@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
+import { HistogramDataGenerator } from '../functions/HistogramDataGenerator';
 
 const HistogramDots: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -13,6 +14,7 @@ const HistogramDots: React.FC = () => {
 
     const location = useLocation();
     const histogramConfig = location.state.histogramConfig;
+    const generator = new HistogramDataGenerator(histogramConfig);
     const CANVAS_BG_COLOR = '#EEFFFF';
     const CANVAS_LINE_COLOR = '#000000';
 
@@ -88,7 +90,7 @@ const HistogramDots: React.FC = () => {
         }
       }
 
-      // 1つの円を描画する関数
+      // 1つの塗りつぶし円を描画する関数
       const drawCircle = (x: number, y: number, color: string) => {
           context.beginPath();
           context.arc(x, y, radius, 0, 2 * Math.PI);

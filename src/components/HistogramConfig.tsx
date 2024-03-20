@@ -7,6 +7,9 @@ import TextField from '@mui/material/TextField';
 import Modal from '@mui/material/Modal';
 import Typography from '@mui/material/Typography';
 
+import { HistogramConfigType } from '../types/HistogramConfigType';
+import { checkHistogramConfig } from '../functions/checkHistogramConfig';
+
 const HistogramConfig: React.FC = () => {
   
   const textFieldStyle = { 
@@ -39,7 +42,7 @@ const HistogramConfig: React.FC = () => {
     decimalPlaces: 0,
     dataCount: 50,
     binCount: 10,
-    type: 'default'
+    histogramType: 'default'
   });
 
   // TextFieldのonChangeハンドラー
@@ -78,27 +81,13 @@ const HistogramConfig: React.FC = () => {
   const handleCheckModalOpen = () => setCheckModalOpen(true);
   const handleCheckModalClose = () => setCheckModalOpen(false);
 
-  const checkHistogramConfig = () => {
-    if (histogramConfig.lowerLimit >= histogramConfig.upperLimit) {
-      return false;
-    }
-    if (histogramConfig.decimalPlaces < 0 || histogramConfig.decimalPlaces > 1) {
-      return false;
-    }
-    if (histogramConfig.dataCount < 1) {
-      return false;
-    }
-    if (histogramConfig.binCount < 1) {
-      return false;
-    }
-    return true;
-  }
+
 
   // 形を選択したときのハンドラー
   const navigate = useNavigate();
 
   const handleTypeClick = () => {
-    if (checkHistogramConfig()) {
+    if (checkHistogramConfig( histogramConfig)) {
       navigate('/histogram/', { state: { histogramConfig } });
     } else {
       handleCheckModalOpen();
@@ -106,22 +95,22 @@ const HistogramConfig: React.FC = () => {
   }
 
   const handleFujisanTypeClick = () => {
-    histogramConfig.type = 'fujisan'; 
+    histogramConfig.histogramType = 'fujisan'; 
     handleTypeClick();
   }
 
   const handleFlatTypeClick = () => {
-    histogramConfig.type = 'flat'; 
+    histogramConfig.histogramType = 'flat'; 
     handleTypeClick();
   }
 
   const handleLeftHighTypeClick = () => {
-    histogramConfig.type = 'leftHigh'; 
+    histogramConfig.histogramType = 'leftHigh'; 
     handleTypeClick();
   }
 
   const handleRightHighTypeClick = () => {
-    histogramConfig.type = 'rightHigh'; 
+    histogramConfig.histogramType = 'rightHigh'; 
     handleTypeClick();
   }
 
