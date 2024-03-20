@@ -15,7 +15,7 @@ const HistogramConfig: React.FC = () => {
   };
   
   const buttonStyle = { 
-    width: 200, height: 200, margin: 1, 
+    width: 150, height: 150, margin: 1, 
     textAlign: 'center', fontSize: 16, 
     lineHeight: 1.3,
   };
@@ -36,7 +36,7 @@ const HistogramConfig: React.FC = () => {
   const [histogramConfig, setHistogramConfig] = useState({
     lowerLimit: 0,
     upperLimit: 100,
-    digitCount: 0,
+    decimalPlaces: 0,
     dataCount: 50,
     binCount: 10,
     type: 'default'
@@ -55,8 +55,8 @@ const HistogramConfig: React.FC = () => {
     console.log(JSON.stringify(histogramConfig));
   };
 
-  const handleDigitCountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    histogramConfig.digitCount = Number(event.target.value);
+  const handleDecimalPlacesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    histogramConfig.decimalPlaces = Number(event.target.value);
     setHistogramConfig(histogramConfig);
     console.log(JSON.stringify(histogramConfig));
   };
@@ -82,10 +82,10 @@ const HistogramConfig: React.FC = () => {
     if (histogramConfig.lowerLimit >= histogramConfig.upperLimit) {
       return false;
     }
-    if (histogramConfig.digitCount < 0 || histogramConfig.digitCount > 1) {
+    if (histogramConfig.decimalPlaces < 0 || histogramConfig.decimalPlaces > 1) {
       return false;
     }
-    if (histogramConfig.dataCount < 0) {
+    if (histogramConfig.dataCount < 1) {
       return false;
     }
     if (histogramConfig.binCount < 1) {
@@ -126,9 +126,9 @@ const HistogramConfig: React.FC = () => {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 , margin:0}}>
       <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: 2 }}>
-      <TextField 
+        <TextField 
           label="最小値"
           type='number'
           defaultValue={histogramConfig.lowerLimit}
@@ -156,20 +156,22 @@ const HistogramConfig: React.FC = () => {
             max: 1,
           }}
           helperText="0桁 or 1桁"
-          defaultValue={histogramConfig.digitCount}
+          defaultValue={histogramConfig.decimalPlaces}
           InputLabelProps={{
             shrink: true,
           }}
           sx={textFieldStyle} 
-          onChange = {handleDigitCountChange} // 適切なハンドラー関数を設定します
+          onChange = {handleDecimalPlacesChange} // 適切なハンドラー関数を設定します
         />
+      </Box>
+      <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: 2 }}>
         <TextField 
           label="データ数"
           type='number'
           inputProps = {{
             min: 0 
           }}
-          helperText="0以上の整数"
+          helperText="1以上の整数"
           defaultValue={histogramConfig.dataCount}
           InputLabelProps={{
             shrink: true,

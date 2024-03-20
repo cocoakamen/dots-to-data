@@ -8,22 +8,25 @@ import Box from '@mui/material/Box';
 function App() {
   return (
     <Router>
-      <Container maxWidth="lg">
-        <Box sx={
-          { display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 2 }
-        }>
-          <h2><Link to="/">Dots to Data</Link></h2>
-        </Box>
+        <Container maxWidth="lg" sx={{ alignItems: 'center',}}>
+            <Box sx={
+              { display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                padding: 1,
+            }
+            }>
+              <strong><Link to="/">Dots to Data</Link></strong>
+            </Box>
 
-      <div>
-        {/* ページ遷移の定義 */}
-        <Routes>
-          <Route path="/" element={<HistogramConfig />} />
-          <Route path="/histogram/" element={<HistogramDots />} />
-        </Routes>
-      </div>
-      </Container>
-
+          <div>
+            {/* ページ遷移の定義 */}
+            <Routes>
+              <Route path="/" element={<HistogramConfig />} />
+              <Route path="/histogram/" element={<HistogramDots />} />
+            </Routes>
+          </div>
+        </Container>
     </Router>
   );
 }
