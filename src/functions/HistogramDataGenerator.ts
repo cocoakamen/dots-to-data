@@ -3,21 +3,25 @@ import { HistogramConfig } from "../types/HistogramConfig";
 
 export class HistogramDataGenerator {
   private config: HistogramConfig;
-
+  private histogramData : number[] = [];
+  private generatedFlag : boolean = false;
   constructor(config: HistogramConfig) {
     this.config = config;
   }
 
   // ヒストグラムデータを生成する
   generateHistogramData(): number[] {
-    let histogramData: number[] = [];
-    // ここにヒストグラムデータを生成するロジックを書く
-    if (this.config.histogramType === "flat") {
-      histogramData = this.generateFlatHistogramData();
-      console.log(`generateHistogramData: ${histogramData}`);
-    } 
+    if(this.generatedFlag) {
+      return this.histogramData;
+    } else {
+      // ここにヒストグラムデータを生成するロジックを書く
+      if (this.config.histogramType === "flat") {
+        this.histogramData = this.generateFlatHistogramData();
+        console.log(`generateHistogramData: ${this.histogramData} generatedFlag: ${this.generatedFlag}`);
+      } 
+    }
 
-    return histogramData;    
+    return this.histogramData;    
   }
 
   // 各階層の幅を返す
@@ -61,6 +65,9 @@ export class HistogramDataGenerator {
 
   // ヒストグラムデータを生成する type='flat'
   private generateFlatHistogramData(): number[] {
+    if(this.generatedFlag) {
+      return this.histogramData;
+    }
     let flatHistogramData: number[] = [];
     // dataCountから、各binに入るデータの数を計算する(小数点以下は切り捨てる)
     const dataPerBin = Math.floor(this.config.dataCount / this.config.binCount);
@@ -93,6 +100,7 @@ export class HistogramDataGenerator {
                       );
       flatHistogramData.push(random);
     }
+    this.generatedFlag = true;
     return flatHistogramData;
   }
 }
