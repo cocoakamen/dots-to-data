@@ -7,23 +7,19 @@ export class HistogramDataGenerator {
   private generatedFlag : boolean = false;
   constructor(config: HistogramConfig) {
     this.config = config;
+
+    // ここにヒストグラムデータを生成するロジックを書く
+    if (this.config.histogramType === "flat") {
+      this.histogramData = this.generateFlatHistogramData();
+      console.log(`generateHistogramData: ${this.histogramData} generatedFlag: ${this.generatedFlag}`);
+    } 
   }
 
-  // ヒストグラムデータを生成する
-  generateHistogramData(): number[] {
-    if(this.generatedFlag) {
-      return this.histogramData;
-    } else {
-      // ここにヒストグラムデータを生成するロジックを書く
-      if (this.config.histogramType === "flat") {
-        this.histogramData = this.generateFlatHistogramData();
-        console.log(`generateHistogramData: ${this.histogramData} generatedFlag: ${this.generatedFlag}`);
-      } 
-    }
-
-    return this.histogramData;    
+  // ヒストグラムデータを返す
+  get genarateHistogramData(): number[] {
+    return this.histogramData;
   }
-
+  
   // 各階層の幅を返す
   get binWidth(): number {
     // 小数点以下桁数をdecimalPlacesにする
@@ -32,13 +28,11 @@ export class HistogramDataGenerator {
 
   // 生成したリストから各階層のデータ数のリストを返す
   get binDataCountList(): number[] {
-    // ヒストグラムのデータを生成する
-    const histogramData = this.generateHistogramData();
     // 各binのデータ数を数える
     let binDataCountList: number[] = [];
     let minValue = this.config.lowerLimit;
     while (minValue < this.config.upperLimit) {
-        let count = this.countValuesInRange(histogramData, [minValue, minValue + this.binWidth]);
+        let count = this.countValuesInRange(this.histogramData, [minValue, minValue + this.binWidth]);
         binDataCountList.push(count);
         minValue += this.binWidth;
     }

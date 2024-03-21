@@ -49,7 +49,7 @@ describe('HistogramDataGenerator', () => {
         const generator = new HistogramDataGenerator(
             histogramConfig
         );
-        const histogramData = generator.generateHistogramData();
+        const histogramData = generator.genarateHistogramData;
 
         // データ数
         expect(histogramData.length).toBe(histogramConfig.dataCount);
@@ -80,7 +80,7 @@ describe('HistogramDataGenerator', () => {
         const generator = new HistogramDataGenerator(
             histogramConfig
         );
-        const histogramData = generator.generateHistogramData();
+        const histogramData = generator.genarateHistogramData;
 
         // データ数
         expect(histogramData.length).toBe(histogramConfig.dataCount);

@@ -5,24 +5,21 @@ import Box from '@mui/material/Box';
 import { HistogramDataGenerator } from '../functions/HistogramDataGenerator';
 
 const HistogramDots: React.FC = () => {
+  // canvasRef は、描画するための canvas エレメントへの参照
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // React router から渡されたパラメータを取得
   const location = useLocation();
   const histogramConfig = location.state.histogramConfig;
-  const generator = new HistogramDataGenerator(histogramConfig);
+
+  // ヒストグラムのデータ
+  const [dataCountList, setDataCountList] = useState<number[]>([]);
+  const [histogramData, setHistogramData] = useState<number[]>([]);
+
+  // ヒストグラムの描画領域の設定値
   const CANVAS_BG_COLOR = '#EEFFFF';
   const CANVAS_LINE_COLOR = '#000000';
 
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  const [isDragging, setIsDragging] = useState(false);
-  const [positions, setPositions] = useState<{ x: number; y: number }[]>([
-    { x: 50, y: 50 },
-    { x: 100, y: 100 },
-    { x: 150, y: 150 },
-  ]);
-  const [radius, setRadius] = useState(20);
-  const [xPositions, setXPositions] = useState<number[]>([50, 100, 150]);
-  const [yPositions, setYPositions] = useState<number[]>([50, 100, 150]);
-  
   type GraphAreaConfig = {
     xStart: number;
     yStart: number;
@@ -35,12 +32,30 @@ const HistogramDots: React.FC = () => {
   const [graphAreaConfig, setGraphAreaConfig] = useState< GraphAreaConfig>({
      xStart:0, yStart:0 , xEnd: 0, yEnd: 0, xStep: 1, yStep: 1 
   });
-  
+  const [xPositions, setXPositions] = useState<number[]>([]);
+  const [yPositions, setYPositions] = useState<number[]>([]);
+  const [positions, setPositions] = useState<{ x: number; y: number; bin: number }[]>([]);
+  const [radius, setRadius] = useState(20);
+  const [isDragging, setIsDragging] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const [dataCountList, setDataCountList] = useState<number[]>(generator.binDataCountList);
-  const [canvasSize, setCanvasSize] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
 
-  // ヒストグラムの軸を描画する
+  // グラフの描画領域をクリアする
+  const drawGraphArea = () => {
+    const canvas = canvasRef.current;
+    const context = canvas?.getContext('2d');
+    if (!context || !canvas) return;
+
+    const width = Math.min(680, window.innerWidth * 0.9);
+    const height = Math.min(400, window.innerHeight * 0.9);
+    canvas.width = width;
+    canvas.height = height;
+
+    context.clearRect(0, 0, width, height);
+    context.fillStyle = CANVAS_BG_COLOR;
+    context.fillRect(0, 0, width, height);
+  };
+
+  // グラフの軸を描画する
   const drawAxis = () => {
     const canvas = canvasRef.current;
     const context = canvas?.getContext('2d');
@@ -100,24 +115,15 @@ const HistogramDots: React.FC = () => {
     }
   };
 
-  const drawGraphArea = () => {
-    const canvas = canvasRef.current;
-    const context = canvas?.getContext('2d');
-    if (!context || !canvas) return;
-
-    const width = canvasSize.width;
-    const height = canvasSize.height;
-
-    context.clearRect(0, 0, width, height);
-    context.fillStyle = CANVAS_BG_COLOR;
-    context.fillRect(0, 0, width, height);
-  };
-
+  // 位置情報を元に、円を描画する
   const drawAllCircles = () => {
     const canvas = canvasRef.current;
     const context = canvas?.getContext('2d');
     if (!context || !canvas) return;
 
+    const radius = Math.min( graphAreaConfig.xStep * 0.8 , graphAreaConfig.yStep * 0.8 ) / 2;
+    setRadius(radius);
+    console.log(`drawAllCircles: xStep ${graphAreaConfig.xStep}: yStep ${graphAreaConfig.yStep} : r ${radius}`);
     positions.forEach(position => {
       context.beginPath();
       context.arc(position.x, position.y, radius, 0, 2 * Math.PI);
@@ -127,19 +133,124 @@ const HistogramDots: React.FC = () => {
     });
   };
 
-  // canvas再描画
-  const updateCanvas = () => {
+  // x座標をもとにdataCountListのindexを返す
+  const getBinIndex = (x: number) => {
+    const xStart = graphAreaConfig.xStart; 
+    const xStep = graphAreaConfig.xStep;
+    return Math.floor((x - xStart) / xStep);
+  };
+
+  // マウスダウンイベントの処理
+  const handleMouseDown = (event: MouseEvent | TouchEvent) => {
+    const canvas = canvasRef.current;
+    const context = canvas?.getContext('2d');
+    if (!context || !canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = 'touches' in event ? event.touches[0].clientX - rect.left : event.clientX - rect.left;
+    const y = 'touches' in event ? event.touches[0].clientY - rect.top : event.clientY - rect.top;
+    console.log(`handleMouseDown: x ${x}, y ${y}, radius ${radius}, length ${positions.length}`);
+    
+    for (let i = 0; i < positions.length; i++) {
+      const position = positions[i];
+      const isInsideCircle = Math.sqrt((x - position.x) ** 2 + (y - position.y) ** 2) < radius;
+      if (isInsideCircle) {
+        setIsDragging(true);
+        setDraggedIndex(i);
+        console.log(`handleMouseDown: ${i}`);
+        break;
+      }
+    }
+  };
+
+  // マウスアップイベントの処理
+  const handleMouseUp = () => {
+    console.log(`handleMouseUp : isDragging: ${isDragging}`);
+
+    if(draggedIndex === null) return;
+    if (!isDragging) return;
+
+    // x座標をもとにdataCountListのindexを取得する
+    let x = positions[draggedIndex!].x;
+    const bin = getBinIndex(x);
+
+    // Positons配列のbinの値からdataCountListを更新する
+    const newDataCountList = [];
+    for (let i = 0; i < histogramConfig.binCount; i++) {
+      newDataCountList.push(positions.filter(position => position.bin === i).length);
+    }
+    setDataCountList(newDataCountList);
+    console.log(`handleMouseUp: ${JSON.stringify(newDataCountList)}`);
+    
+    // ドラッグ終了
+    setIsDragging(false);
+    setDraggedIndex(null);
+  };
+
+  // マウスムーブイベントの処理
+  const handleMouseMove = (event: MouseEvent | TouchEvent) => {
+    console.log(`handleMouseMove : isDragging: ${isDragging}`);
+    const canvas = canvasRef.current;
+    const context = canvas?.getContext('2d');
+    if (!context || !canvas) return;
+    if (isDragging) {
+      const rect = canvas.getBoundingClientRect();
+      const x = 'touches' in event ? event.touches[0].clientX - rect.left : event.clientX - rect.left;
+      const y = 'touches' in event ? event.touches[0].clientY - rect.top : event.clientY - rect.top;
+      setPositions(prevPositions => {
+        const newPositions = [...prevPositions];
+        newPositions[draggedIndex!] = { x, y, bin: getBinIndex(x)};
+        return newPositions;
+      });
+      context.beginPath();
+      context.arc(x, y, radius, 0, 2 * Math.PI);
+      context.strokeStyle = 'gray';
+      context.stroke();
+      context.closePath();
+    }
+  };
+
+  // positionsが変更されたら、円を再描画する
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const context = canvas?.getContext('2d');
+    if (!context || !canvas) return;
+
     drawGraphArea();
     drawAxis();
     drawAllCircles();
-  };
 
-  // Canvasサイズがセットされたら、グラフの描画領域を設定する
+    // リスナー登録
+    canvas.addEventListener('mousedown', handleMouseDown);
+    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      canvas.removeEventListener('mouseup', handleMouseUp);
+      canvas.removeEventListener('mousedown', handleMouseDown);
+      canvas.removeEventListener('mousemove', handleMouseMove);
+    }
+  }, [positions]);
+
+  // ヒストグラムデータ生成
   useEffect(() => {
-    console.log(`useEffect canvas: ${JSON.stringify(canvasSize)}`);
+    const generator = new HistogramDataGenerator(histogramConfig);
+    setDataCountList(generator.binDataCountList);
+    setHistogramData(generator.genarateHistogramData);
+    console.log('useEffect histogramData: ', generator.genarateHistogramData);
+  
+  }, []);
 
-    const width = canvasSize.width;
-    const height = canvasSize.height;
+  // canvas要素を取得したら、グラフの描画領域の設定値を設定する
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const context = canvas.getContext('2d');
+    if (!context) return;
+
+    const width = Math.min(680, window.innerWidth * 0.9);
+    const height = Math.min(400, window.innerHeight * 0.9);
+    canvas.width = width;
+    canvas.height = height;
+
     const xStart = Math.ceil(Math.min(width * 0.05, 100));
     const xEnd = Math.ceil(Math.min(width * 0.95, 600));
     const yStart = Math.ceil(Math.min(height * 0.05, 100));
@@ -149,6 +260,7 @@ const HistogramDots: React.FC = () => {
     const xCenters = [];
     const yCenters = [];
 
+  
     for (let i = 0; i < histogramConfig.binCount; i++) {
       xCenters.push(xStart + xStep * i + xStep / 2);
     }
@@ -168,129 +280,59 @@ const HistogramDots: React.FC = () => {
       yStep: yStep 
     });
     console.log(`useEffect canvas: ${JSON.stringify(graphAreaConfig)}`);
-  }, [canvasSize]);
+    
+  }, [dataCountList, histogramConfig]);
 
-  // graphAreaConfigがセットされたら、GraphAreaを描画する
+
+  // ドラッグ
   useEffect(() => {
-    console.log(`useEffect graphAreaConfig: ${JSON.stringify(graphAreaConfig)}`);
-    updateCanvas();
-  }, [graphAreaConfig, positions]  );
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
+    canvas.addEventListener('mousemove', handleMouseMove);
+
+    return () => {
+      canvas.removeEventListener('mousemove', handleMouseMove);
+
+    }
+  }, [isDragging, draggedIndex]);
+
+  //  xPositons, yPositonsが変更されたら、Positionsを更新する
   useEffect(() => {
     const newPositions = [];
     for (let i = 0; i < dataCountList.length; i++) {
       for (let j = 0; j < dataCountList[i]; j++) {
-        newPositions.push({ x: xPositions[i], y: yPositions[j] });
+        newPositions.push({ x: xPositions[i], y: yPositions[j], bin: i});
       }
     }
     setPositions(newPositions);
     console.log(`useEffect: ${JSON.stringify(newPositions)}`);
   
-    }, [xPositions, yPositions]);
+  }, [xPositions, yPositions]);
 
-  useEffect(() => {
-    console.log(`useEffect postitons: ${JSON.stringify(graphAreaConfig)}`);
-  }, [positions]);
-
+  // GraphAreaConfig が変更されたら、canvasを再描画する
   useEffect(() => {
     const canvas = canvasRef.current;
     const context = canvas?.getContext('2d');
     if (!context || !canvas) return;
 
-    const radius = 20;
-
-    const drawDraggedCircle = (x: number, y: number, color: string) => {
-      context.beginPath();
-      context.arc(x, y, radius, 0, 2 * Math.PI);
-      context.strokeStyle = color;
-      context.stroke();
-      context.closePath();
-    };
-
-
-
-    const resizeCanvas = () => {
-      const width = Math.min(680, window.innerWidth * 0.9);
-      const height = Math.min(400, window.innerHeight * 0.9);
-      canvas.width = width;
-      canvas.height = height;
-      setCanvasSize({ 
-        width: width, 
-        height: height 
-      });
-      drawGraphArea();
-      drawAllCircles();
-      console.log(`resizeCanvas: ${JSON.stringify(canvasSize)}`);
-    };
-
-    resizeCanvas();
     drawGraphArea();
     drawAxis();
+  }, [graphAreaConfig]);
+
+  // positionsが変更されたら、円を再描画する
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const context = canvas?.getContext('2d');
+    if (!context || !canvas) return;
+
     drawAllCircles();
-
-    const handleMouseDown = (event: MouseEvent | TouchEvent) => {
-      console.log(`handleMouseDown: ${JSON.stringify(event)}`);
-      const rect = canvas.getBoundingClientRect();
-      const x = 'touches' in event ? event.touches[0].clientX - rect.left : event.clientX - rect.left;
-      const y = 'touches' in event ? event.touches[0].clientY - rect.top : event.clientY - rect.top;
-
-      for (let i = 0; i < positions.length; i++) {
-        const position = positions[i];
-        const isInsideCircle = Math.sqrt((x - position.x) ** 2 + (y - position.y) ** 2) < radius;
-        if (isInsideCircle) {
-          setIsDragging(true);
-          setDraggedIndex(i);
-          break;
-        }
-      }
-    };
-
-    const handleMouseUp = () => {
-      console.log('handleMouseUp');
-      setIsDragging(false);
-    };
-
-    const handleMouseMove = (event: MouseEvent | TouchEvent) => {
-      console.log(`handleMouseMove: ${JSON.stringify(event)}`);
-      if (isDragging) {
-        const rect = canvas.getBoundingClientRect();
-        const x = 'touches' in event ? event.touches[0].clientX - rect.left : event.clientX - rect.left;
-        const y = 'touches' in event ? event.touches[0].clientY - rect.top : event.clientY - rect.top;
-        setPositions(prevPositions => {
-          const newPositions = [...prevPositions];
-          newPositions[draggedIndex!] = { x, y };
-          return newPositions;
-        });
-        drawDraggedCircle(x, y, 'gray');
-      }
-    };
-
-    canvas.addEventListener('mousedown', handleMouseDown);
-    canvas.addEventListener('mouseup', handleMouseUp);
-    canvas.addEventListener('mousemove', handleMouseMove);
-
-    canvas.addEventListener('touchstart', handleMouseDown);
-    canvas.addEventListener('touchend', handleMouseUp);
-    canvas.addEventListener('touchmove', handleMouseMove);
-
-    window.addEventListener('resize', resizeCanvas);
-
-    return () => {
-      canvas.removeEventListener('mousedown', handleMouseDown);
-      canvas.removeEventListener('mouseup', handleMouseUp);
-      canvas.removeEventListener('mousemove', handleMouseMove);
-
-      canvas.removeEventListener('touchstart', handleMouseDown);
-      canvas.removeEventListener('touchend', handleMouseUp);
-      canvas.removeEventListener('touchmove', handleMouseMove);
-
-      window.removeEventListener('resize', resizeCanvas);
-    };
-  }, [isDragging]);
+  }, [positions]);
 
   return (
     <Container>
       <div>{JSON.stringify(histogramConfig)}</div>
+      <div>{JSON.stringify(histogramData)}</div>
       <Box display="flex" justifyContent="center" alignItems="center" height="100%">
         <canvas ref={canvasRef} width="100%" />
       </Box>
