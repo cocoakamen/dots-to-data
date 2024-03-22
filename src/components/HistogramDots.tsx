@@ -168,11 +168,7 @@ const HistogramDots: React.FC = () => {
 
     if(draggedIndex === null) return;
     if (!isDragging) return;
-
-    // x座標をもとにdataCountListのindexを取得する
-    let x = positions[draggedIndex!].x;
-    const bin = getBinIndex(x);
-
+    
     // Positons配列のbinの値からdataCountListを更新する
     const newDataCountList = [];
     for (let i = 0; i < histogramConfig.binCount; i++) {

@@ -7,7 +7,6 @@ import TextField from '@mui/material/TextField';
 import Modal from '@mui/material/Modal';
 import Typography from '@mui/material/Typography';
 
-import { HistogramConfigType } from '../types/HistogramConfigType';
 import { checkHistogramConfig } from '../functions/checkHistogramConfig';
 
 const HistogramConfig: React.FC = () => {
