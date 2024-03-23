@@ -56,22 +56,23 @@ export class HistogramDataGenerator {
       // 真ん中のインデックスを取得する
       const centerIndex = Math.floor(this.config.binCount / 2);
       // 真ん中から順番に足していくインデックスの順番配列を作る
-      let addCount = 0;
+      let addCount = 1;
 
       // データ数分くりかえす
       let count = 0;
       while( count < this.config.dataCount ){
         // 真ん中の前後にデータを追加していく
         // 一段の数
-        let rowCount = addCount * 2 + this.config.binCount % 2;
-        for (let i = 0 ; i <= rowCount; i++) {
+        const rowCount = Math.min(addCount * 2 - this.config.binCount % 2, this.config.binCount);
+        const offSet = Math.min(addCount - 1, centerIndex);
+        for (let i = 0 ; i < rowCount; i++) {
           if (count < this.config.dataCount) {
-            binDataCountList[centerIndex - addCount + i] += 1;
+            binDataCountList[centerIndex - 1 - offSet + i] += 1;
             count++;
           }
         }
         addCount++;
-        console.log(`centerIndex: ${centerIndex} addCount: ${addCount} count: ${count}`);
+        console.log(`centerIndex: ${centerIndex} addCount: ${addCount} count: ${count} rowCount: ${rowCount} binDataCountList: ${binDataCountList}`);
 
       }
     }

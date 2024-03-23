@@ -83,7 +83,7 @@ describe('HistogramDataGenerator', () => {
         const generator = new HistogramDataGenerator(histogramConfig);
         const binDataCountList = generator.binDataCountList;
     
-        const expectedBinDataCountList = [0, 0, 1, 2, 3, 4, 4, 3, 2, 1, 0];
+        const expectedBinDataCountList = [0, 1, 2, 3, 4, 4, 3, 2, 1, 0, 0];
         expect(binDataCountList).toEqual(expectedBinDataCountList);
     });
 
@@ -104,7 +104,7 @@ describe('HistogramDataGenerator', () => {
         expect(binDataCountList).toEqual(expectedBinDataCountList);
     });
 
-    test('should generate bin data count list : type=fujisan binCountが偶数', () => {
+    test('should generate bin data count list : type=fujisan binCountが偶数 データ数12', () => {
         const histogramConfig = {
             lowerLimit: 0,
             upperLimit: 100,
@@ -118,6 +118,23 @@ describe('HistogramDataGenerator', () => {
         const binDataCountList = generator.binDataCountList;
     
         const expectedBinDataCountList = [0, 0, 1, 2, 3, 3, 2, 1, 0, 0];
+        expect(binDataCountList).toEqual(expectedBinDataCountList);
+    });
+
+    test('should generate bin data count list : type=fujisan binCountが偶数 データ数31', () => {
+        const histogramConfig = {
+            lowerLimit: 0,
+            upperLimit: 100,
+            decimalPlaces: 0,
+            dataCount: 31,
+            binCount: 10,
+            histogramType: 'fujisan'
+        };
+    
+        const generator = new HistogramDataGenerator(histogramConfig);
+        const binDataCountList = generator.binDataCountList;
+    
+        const expectedBinDataCountList = [2, 2, 3, 4, 5, 5, 4, 3, 2, 1];
         expect(binDataCountList).toEqual(expectedBinDataCountList);
     });
 });
