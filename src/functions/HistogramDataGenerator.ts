@@ -61,7 +61,7 @@ export class HistogramDataGenerator {
         centerIndex = Math.floor(this.config.binCount / 2);
       }
 
-      // 真ん中から順番に足していくインデックスの順番配列を作る
+      // １段ずつデータを追加していく
       let addCount = 1;
 
       // データ数分くりかえす
@@ -111,7 +111,7 @@ export class HistogramDataGenerator {
       // データを追加し始めるインデックス
       const startIndex = Math.floor(this.config.binCount * 0.2);
       
-      // 真ん中から順番に足していくインデックスの順番配列を作る
+      // １段ずつデータを追加していく
       let addCount = 1;
 
       // データ数分くりかえす
@@ -143,6 +143,44 @@ export class HistogramDataGenerator {
       }
     }
 
+    // rightHigh型の場合
+    if ( this.config.histogramType === "rightHigh" ) {
+      // dataCount分の配列を確保する
+      binDataCountList = new Array(this.config.binCount).fill(0);
+
+      // データを追加し始めるインデックス
+      const startIndex = Math.floor(this.config.binCount * 0.8) - 1;
+      
+      // 1段ずつデータを追加していく
+      let addCount = 1;
+
+      // データ数分くりかえす
+      let count = 0;
+      while( count < this.config.dataCount ){
+        // 一段の数
+        let rowCount = 0;
+        if ( startIndex + addCount < this.config.binCount ) {
+          rowCount = addCount * 2 - 1;
+        } else {
+          rowCount = Math.min( addCount + 1, this.config.binCount );
+        }
+        const offSet = Math.min(addCount - 1 , startIndex);
+        for (let i = 0 ; i < rowCount; i++) {
+          if (count >= this.config.dataCount) {
+            break;
+          }
+          binDataCountList[startIndex - offSet + i] += 1;
+          count++;
+        }
+        console.log(`centerIndex: ${startIndex} 
+                      addCount: ${addCount} count: ${count} rowCount: ${rowCount} 
+                      offSet: ${offSet}  startIndex - offSet : ${startIndex - offSet }
+                      binDataCountList: ${binDataCountList} `);
+
+        addCount++;
+
+      }
+    }
     console.log(`binDataCountList: ${binDataCountList}`);
     this.dataCountList = binDataCountList;
     return this.dataCountList;

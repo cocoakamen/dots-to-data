@@ -154,5 +154,56 @@ describe('HistogramDataGenerator', () => {
         const expectedBinDataCountList = [3, 4, 3, 2, 1];
         expect(binDataCountList).toEqual(expectedBinDataCountList);
     });
+
+    test('should generate bin data count list : type=leftHigh データ数13 階層数5', () => {
+        const histogramConfig = {
+            lowerLimit: 0,
+            upperLimit: 100,
+            decimalPlaces: 0,
+            dataCount: 15,
+            binCount: 5,
+            histogramType: 'leftHigh'
+        };
+    
+        const generator = new HistogramDataGenerator(histogramConfig);
+        const binDataCountList = generator.binDataCountList;
+    
+        const expectedBinDataCountList = [4, 5, 3, 2, 1];
+        expect(binDataCountList).toEqual(expectedBinDataCountList);
+    });
+
+    test('should generate bin data count list : type=rightHigh データ数13 階層数5', () => {
+        const histogramConfig = {
+            lowerLimit: 0,
+            upperLimit: 100,
+            decimalPlaces: 0,
+            dataCount: 13,
+            binCount: 5,
+            histogramType: 'rightHigh'
+        };
+    
+        const generator = new HistogramDataGenerator(histogramConfig);
+        const binDataCountList = generator.binDataCountList;
+    
+        const expectedBinDataCountList = [1, 2, 3, 4, 3];
+        expect(binDataCountList).toEqual(expectedBinDataCountList);
+    });
+
+    test('should generate bin data count list : type=rightHigh データ数15 階層数5', () => {
+        const histogramConfig = {
+            lowerLimit: 0,
+            upperLimit: 100,
+            decimalPlaces: 0,
+            dataCount: 15,
+            binCount: 5,
+            histogramType: 'rightHigh'
+        };
+    
+        const generator = new HistogramDataGenerator(histogramConfig);
+        const binDataCountList = generator.binDataCountList;
+    
+        const expectedBinDataCountList = [2, 3, 3, 4, 3];
+        expect(binDataCountList).toEqual(expectedBinDataCountList);
+    });
 });
 
