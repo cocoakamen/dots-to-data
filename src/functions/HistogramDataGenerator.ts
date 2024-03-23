@@ -54,7 +54,13 @@ export class HistogramDataGenerator {
 
       // binCountが奇数の場合
       // 真ん中のインデックスを取得する
-      const centerIndex = Math.floor(this.config.binCount / 2);
+      let centerIndex = 0;
+      if (this.config.binCount % 2 === 0) {
+        centerIndex = this.config.binCount / 2 - 1;
+      } else {
+        centerIndex = Math.floor(this.config.binCount / 2);
+      }
+      
       // 真ん中から順番に足していくインデックスの順番配列を作る
       let addCount = 1;
 
@@ -64,15 +70,20 @@ export class HistogramDataGenerator {
         // 真ん中の前後にデータを追加していく
         // 一段の数
         const rowCount = Math.min(addCount * 2 - this.config.binCount % 2, this.config.binCount);
-        const offSet = Math.min(addCount - 1, centerIndex);
+        const offSet = Math.min(addCount - 1 , centerIndex);
         for (let i = 0 ; i < rowCount; i++) {
-          if (count < this.config.dataCount) {
-            binDataCountList[centerIndex - 1 - offSet + i] += 1;
-            count++;
+          if (count >= this.config.dataCount) {
+            break;
           }
+          binDataCountList[centerIndex - offSet + i] += 1;
+          count++;
         }
+        console.log(`centerIndex: ${centerIndex} 
+                      addCount: ${addCount} count: ${count} rowCount: ${rowCount} 
+                      offSet: ${offSet}  centerIndex - offSet : ${centerIndex - offSet }
+                      binDataCountList: ${binDataCountList} `);
+
         addCount++;
-        console.log(`centerIndex: ${centerIndex} addCount: ${addCount} count: ${count} rowCount: ${rowCount} binDataCountList: ${binDataCountList}`);
 
       }
     }
