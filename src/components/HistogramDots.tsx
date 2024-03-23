@@ -12,6 +12,9 @@ const HistogramDots: React.FC = () => {
   const location = useLocation();
   const histogramConfig = location.state.histogramConfig;
 
+  // generator
+  const generator = new HistogramDataGenerator(histogramConfig);
+
   // ヒストグラムのデータ
   const [dataCountList, setDataCountList] = useState<number[]>([]);
   const [histogramData, setHistogramData] = useState<number[]>([]);
@@ -148,7 +151,7 @@ const HistogramDots: React.FC = () => {
     const rect = canvas.getBoundingClientRect();
     const x = 'touches' in event ? event.touches[0].clientX - rect.left : event.clientX - rect.left;
     const y = 'touches' in event ? event.touches[0].clientY - rect.top : event.clientY - rect.top;
-    console.log(`handleMouseDown: x ${x}, y ${y}, radius ${radius}, length ${positions.length}`);
+    console.log(`handleMouseDown ${JSON.stringify(event)}: x ${x}, y ${y}, radius ${radius}, length ${positions.length}`);
     
     for (let i = 0; i < positions.length; i++) {
       const position = positions[i];
@@ -219,23 +222,31 @@ const HistogramDots: React.FC = () => {
     canvas.addEventListener('mousedown', handleMouseDown);
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseup', handleMouseUp);
+    
+    canvas.addEventListener('touchstart', handleMouseDown);
+    canvas.addEventListener('touchmove', handleMouseMove);
+    canvas.addEventListener('touchend', handleMouseUp);
+    
     return () => {
-      canvas.removeEventListener('mouseup', handleMouseUp);
       canvas.removeEventListener('mousedown', handleMouseDown);
       canvas.removeEventListener('mousemove', handleMouseMove);
+      canvas.removeEventListener('mouseup', handleMouseUp);
+
+      canvas.removeEventListener('touchstart', handleMouseDown);
+      canvas.removeEventListener('touchmove', handleMouseMove);
+      canvas.removeEventListener('touchend', handleMouseUp);
     }
   }, [positions]);
 
   // ヒストグラムデータ生成
   useEffect(() => {
-    const generator = new HistogramDataGenerator(histogramConfig);
     setDataCountList(generator.binDataCountList);
     setHistogramData(generator.genarateHistogramData);
-    console.log('useEffect histogramData: ', generator.genarateHistogramData);
+    console.log('useEffect histogramData: ');
   
   }, []);
 
-  // canvas要素を取得したら、グラフの描画領域の設定値を設定する
+  // グラフの描画領域の設定値を設定する
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -279,6 +290,13 @@ const HistogramDots: React.FC = () => {
     
   }, [dataCountList, histogramConfig]);
 
+  // histogramDataを生成する
+  useEffect(() => {
+    generator.binDataCountList = dataCountList;
+    setHistogramData(generator.genarateHistogramData);
+    console.log('useEffect histogramData: ', generator.genarateHistogramData);
+  
+  }, [　dataCountList]);
 
   // ドラッグ
   useEffect(() => {
@@ -329,6 +347,7 @@ const HistogramDots: React.FC = () => {
     <Container>
       <div>{JSON.stringify(histogramConfig)}</div>
       <div>{JSON.stringify(histogramData)}</div>
+      <div>{JSON.stringify(dataCountList)}</div>
       <Box display="flex" justifyContent="center" alignItems="center" height="100%">
         <canvas ref={canvasRef} width="100%" />
       </Box>
