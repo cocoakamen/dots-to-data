@@ -273,5 +273,22 @@ describe('HistogramDataGenerator', () => {
         const expectedBinDataCountList = [0, 0, 0, 0, 1, 1, 2, 3, 2, 1];
         expect(binDataCountList).toEqual(expectedBinDataCountList);
     });
+
+    test('should generate bin data count list : type=rightHigh データ数13 階層数6', () => {
+        const histogramConfig = {
+            lowerLimit: 0,
+            upperLimit: 100,
+            decimalPlaces: 0,
+            dataCount: 15,
+            binCount: 10,
+            histogramType: 'rightHigh'
+        };
+    
+        const generator = new HistogramDataGenerator(histogramConfig);
+        const binDataCountList = generator.binDataCountList;
+    
+        const expectedBinDataCountList = [0, 0, 0, 0, 1, 2, 3, 4, 3, 2];
+        expect(binDataCountList).toEqual(expectedBinDataCountList);
+    });
 });
 

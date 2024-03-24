@@ -163,7 +163,7 @@ export class HistogramDataGenerator {
         if ( startIndex + addCount  <= this.config.binCount ) {
           rowCount = addCount * 2 - 1;
         } else {
-          rowCount = Math.min( addCount + 1, this.config.binCount );
+          rowCount = Math.min( this.config.binCount - startIndex + addCount -1, this.config.binCount );
         }
         const offSet = Math.min(addCount - 1 , startIndex) ;
         for (let i = 0 ; i < rowCount; i++) {
