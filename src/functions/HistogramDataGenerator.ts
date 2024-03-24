@@ -133,7 +133,7 @@ export class HistogramDataGenerator {
           binDataCountList[startIndex - offSet + i] += 1;
           count++;
         }
-        console.log(`centerIndex: ${startIndex} 
+        console.log(`histgramType: ${this.config.histogramType} startIndex: ${startIndex} 
                       addCount: ${addCount} count: ${count} rowCount: ${rowCount} 
                       offSet: ${offSet}  startIndex - offSet : ${startIndex - offSet }
                       binDataCountList: ${binDataCountList} `);
@@ -149,7 +149,7 @@ export class HistogramDataGenerator {
       binDataCountList = new Array(this.config.binCount).fill(0);
 
       // データを追加し始めるインデックス
-      const startIndex = Math.floor(this.config.binCount * 0.8) - 1;
+      const startIndex = Math.ceil(this.config.binCount * 0.8) - 1;
       
       // 1段ずつデータを追加していく
       let addCount = 1;
@@ -159,12 +159,13 @@ export class HistogramDataGenerator {
       while( count < this.config.dataCount ){
         // 一段の数
         let rowCount = 0;
-        if ( startIndex + addCount < this.config.binCount ) {
+        console.log(`startIndex: ${startIndex} addCount: ${addCount} bincount: ${this.config.binCount}`);
+        if ( startIndex + addCount  <= this.config.binCount ) {
           rowCount = addCount * 2 - 1;
         } else {
           rowCount = Math.min( addCount + 1, this.config.binCount );
         }
-        const offSet = Math.min(addCount - 1 , startIndex);
+        const offSet = Math.min(addCount - 1 , startIndex) ;
         for (let i = 0 ; i < rowCount; i++) {
           if (count >= this.config.dataCount) {
             break;
@@ -172,7 +173,7 @@ export class HistogramDataGenerator {
           binDataCountList[startIndex - offSet + i] += 1;
           count++;
         }
-        console.log(`centerIndex: ${startIndex} 
+        console.log(`startIndex: ${startIndex} histgramType: ${this.config.histogramType}
                       addCount: ${addCount} count: ${count} rowCount: ${rowCount} 
                       offSet: ${offSet}  startIndex - offSet : ${startIndex - offSet }
                       binDataCountList: ${binDataCountList} `);
