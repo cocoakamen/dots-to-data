@@ -1,7 +1,7 @@
 import { HashRouter as Router, Route, Link, Routes } from 'react-router-dom';
 import HistogramDots from './components/HistogramDots';
 import HistogramConfig from './components/HistogramConfig';
-import './App.css';
+// import './App.css';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 
@@ -19,14 +19,15 @@ function App() {
               <strong><Link to="/">Dots to Data</Link></strong>
             </Box>
 
-          <div>
             {/* ページ遷移の定義 */}
             <Routes>
               <Route path="/" element={<HistogramConfig />} />
               <Route path="/histogram/" element={<HistogramDots />} />
             </Routes>
-          </div>
         </Container>
+
+
+
     </Router>
   );
 }
