@@ -344,14 +344,14 @@ const HistogramDots: React.FC = () => {
   }, [positions]);
 
   return (
-    <Container>
+    <Box>
       <div>{JSON.stringify(histogramConfig)}</div>
       <div>{JSON.stringify(histogramData)}</div>
       <div>{JSON.stringify(dataCountList)}</div>
       <Box display="flex" justifyContent="center" alignItems="center" height="100%">
         <canvas ref={canvasRef} width="100%" />
       </Box>
-    </Container>
+    </Box>
   );
 };
 
