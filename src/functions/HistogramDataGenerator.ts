@@ -78,10 +78,10 @@ export class HistogramDataGenerator {
           binDataCountList[centerIndex - offSet + i] += 1;
           count++;
         }
-        console.log(`centerIndex: ${centerIndex} 
-                      addCount: ${addCount} count: ${count} rowCount: ${rowCount} 
-                      offSet: ${offSet}  centerIndex - offSet : ${centerIndex - offSet }
-                      binDataCountList: ${binDataCountList} `);
+        // console.log(`centerIndex: ${centerIndex} 
+        //               addCount: ${addCount} count: ${count} rowCount: ${rowCount} 
+        //               offSet: ${offSet}  centerIndex - offSet : ${centerIndex - offSet }
+        //               binDataCountList: ${binDataCountList} `);
 
         addCount++;
 
@@ -133,10 +133,10 @@ export class HistogramDataGenerator {
           binDataCountList[startIndex - offSet + i] += 1;
           count++;
         }
-        console.log(`histgramType: ${this.config.histogramType} startIndex: ${startIndex} 
-                      addCount: ${addCount} count: ${count} rowCount: ${rowCount} 
-                      offSet: ${offSet}  startIndex - offSet : ${startIndex - offSet }
-                      binDataCountList: ${binDataCountList} `);
+        // console.log(`histgramType: ${this.config.histogramType} startIndex: ${startIndex} 
+        //               addCount: ${addCount} count: ${count} rowCount: ${rowCount} 
+        //               offSet: ${offSet}  startIndex - offSet : ${startIndex - offSet }
+        //               binDataCountList: ${binDataCountList} `);
 
         addCount++;
 
@@ -159,7 +159,7 @@ export class HistogramDataGenerator {
       while( count < this.config.dataCount ){
         // 一段の数
         let rowCount = 0;
-        console.log(`startIndex: ${startIndex} addCount: ${addCount} bincount: ${this.config.binCount}`);
+        // console.log(`startIndex: ${startIndex} addCount: ${addCount} bincount: ${this.config.binCount}`);
         if ( startIndex + addCount  <= this.config.binCount ) {
           rowCount = addCount * 2 - 1;
         } else {
@@ -173,16 +173,16 @@ export class HistogramDataGenerator {
           binDataCountList[startIndex - offSet + i] += 1;
           count++;
         }
-        console.log(`startIndex: ${startIndex} histgramType: ${this.config.histogramType}
-                      addCount: ${addCount} count: ${count} rowCount: ${rowCount} 
-                      offSet: ${offSet}  startIndex - offSet : ${startIndex - offSet }
-                      binDataCountList: ${binDataCountList} `);
+        // console.log(`startIndex: ${startIndex} histgramType: ${this.config.histogramType}
+        //               addCount: ${addCount} count: ${count} rowCount: ${rowCount} 
+        //               offSet: ${offSet}  startIndex - offSet : ${startIndex - offSet }
+        //               binDataCountList: ${binDataCountList} `);
 
         addCount++;
 
       }
     }
-    console.log(`binDataCountList: ${binDataCountList}`);
+    // console.log(`binDataCountList: ${binDataCountList}`);
     this.dataCountList = binDataCountList;
     return this.dataCountList;
   }
